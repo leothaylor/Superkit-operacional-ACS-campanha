@@ -1,313 +1,573 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="scroll-smooth">
 <head>
+    <!-- TRACKING SUPERKIT: inserir Google Analytics novo aqui -->
+    <!-- TRACKING SUPERKIT: inserir Meta Pixel novo aqui -->
+    <!-- TRACKING SUPERKIT: inserir Microsoft Clarity novo aqui -->
+    
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Operacional VitaChronos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SuperKit ACS | Fichas e checklists para a rotina do ACS</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        acs: {
+                            teal: '#14b8a6',
+                            dark: '#0f766e',
+                            light: '#f0fdfa',
+                            bg: '#f8fafc',
+                            ink: '#0f172a',
+                            muted: '#475569',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0b0f19;
-            color: #e2e8f0;
+            background-color: #f8fafc;
+            color: #0f172a;
+            -webkit-font-smoothing: antialiased;
         }
-        .glass {
-            background: rgba(17, 24, 39, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+
+        .cta-button {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            animation: pulse-subtle 2s infinite;
         }
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
+
+        .cta-button:active {
+            transform: scale(0.98);
         }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: rgba(15, 23, 42, 0.6);
+
+        @keyframes pulse-subtle {
+            0% { box-shadow: 0 0 0 0 rgba(20, 184, 166, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(20, 184, 166, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(20, 184, 166, 0); }
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: rgba(59, 130, 246, 0.5);
-            border-radius: 3px;
+
+        details > summary { list-style: none; }
+        details > summary::-webkit-details-marker { display: none; }
+
+        .mobile-cta-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 12px 16px;
+            padding-bottom: calc(12px + env(safe-area-inset-bottom));
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        @media (min-width: 768px) {
+            .mobile-cta-bar { display: none; }
+            body { padding-bottom: 0; }
+        }
+
+        #imageModal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(4px);
+        }
+
+        #imageModal.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .no-select {
+            user-select: none;
+            -webkit-user-select: none;
+            pointer-events: none;
         }
     </style>
 </head>
-<body class="min-h-screen bg-slate-950 p-4 md:p-8 custom-scrollbar">
+<body class="font-sans pb-20 md:pb-0">
 
-    <div class="max-w-7xl mx-auto space-y-6">
-        
-        <header class="glass rounded-2xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-l-4 border-blue-500">
-            <div>
-                <div class="flex items-center gap-2 text-xs font-bold tracking-widest text-blue-400 uppercase">
-                    <span>⚙️ SISTEMA PESSOAL</span> • <span>VITACHRONOS v1.0</span>
-                </div>
-                <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-white mt-1">Painel Estratégico & Operacional</h1>
-            </div>
-            <div class="text-right flex flex-col items-end">
-                <span class="text-xs text-slate-400" id="current-date">Quarta-feira, 10 de Junho de 2026</span>
-                <span class="text-xs bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded-full font-medium border border-emerald-500/20 mt-2 flex items-center gap-1.5">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Sistema Pronto
-                </span>
-            </div>
-        </header>
-
-        <nav class="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <button onclick="switchTab('dashboard')" id="btn-dashboard" class="tab-btn glass text-white p-3.5 rounded-xl text-sm font-medium transition-all border-b-2 border-blue-500 bg-slate-900/90 flex items-center justify-center gap-2">
-                📊 Visão Geral
-            </button>
-            <button onclick="switchTab('vitachronos')" id="btn-vitachronos" class="tab-btn glass text-slate-400 p-3.5 rounded-xl text-sm font-medium transition-all hover:text-white flex items-center justify-center gap-2">
-                🧠 VitaChronos
-            </button>
-            <button onclick="switchTab('financeiro')" id="btn-financeiro" class="tab-btn glass text-slate-400 p-3.5 rounded-xl text-sm font-medium transition-all hover:text-white flex items-center justify-center gap-2">
-                💰 Finanças
-            </button>
-            <button onclick="switchTab('projetos')" id="btn-projetos" class="tab-btn glass text-slate-400 p-3.5 rounded-xl text-sm font-medium transition-all hover:text-white flex items-center justify-center gap-2">
-                🚀 Negócios & IA
-            </button>
-        </nav>
-
-        <section id="tab-dashboard" class="tab-content space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="glass rounded-2xl p-5 border-l-4 border-amber-500">
-                    <span class="text-xs font-bold uppercase text-slate-400 tracking-wider">Prioridade Máxima</span>
-                    <h3 class="text-lg font-bold text-white mt-1">Lançamento Superkit ACS</h3>
-                    <p class="text-xs text-slate-400 mt-2">Precificação alvo definida para <b>R$ 29,90</b>. Foco em atualizar fichas de acompanhamento e indicadores.</p>
-                </div>
-                <div class="glass rounded-2xl p-5 border-l-4 border-blue-500">
-                    <span class="text-xs font-bold uppercase text-slate-400 tracking-wider">Construção de Autonomia</span>
-                    <h3 class="text-lg font-bold text-white mt-1">Canal de Conteúdo Pessoal</h3>
-                    <p class="text-xs text-slate-400 mt-2">Garantir diversificação de nicho: rotina, processos com IA, treinos e narrativa de autonomia.</p>
-                </div>
-                <div class="glass rounded-2xl p-5 border-l-4 border-emerald-500">
-                    <span class="text-xs font-bold uppercase text-slate-400 tracking-wider">Saúde & Monitoramento</span>
-                    <h3 class="text-lg font-bold text-white mt-1">Rotina de Hipertrofia</h3>
-                    <p class="text-xs text-slate-400 mt-2">Treinos estruturados, controle rigoroso de cardio, peso e ingestão de macronutrientes.</p>
+    <!-- 1. NAV -->
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-40">
+        <div class="max-w-4xl mx-auto px-5 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <img src="assets/logo-ig.png" alt="Logo" class="h-8 w-auto rounded-full object-contain" onerror="this.style.display='none'">
+                <div class="font-black text-acs-dark tracking-tighter text-lg">
+                    SUPERKIT ACS
                 </div>
             </div>
-
-            <div class="glass rounded-2xl p-6">
-                <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">⚙️ Próximos Passos Operacionais Semanais</h2>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="border-b border-slate-800 text-slate-400 text-xs uppercase tracking-wider">
-                                <th class="pb-3 font-semibold">Contexto</th>
-                                <th class="pb-3 font-semibold">Ação Prática</th>
-                                <th class="pb-3 font-semibold">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody class="text-sm divide-y divide-slate-800/50">
-                            <tr>
-                                <td class="py-3.5"><span class="bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded text-xs border border-indigo-500/20 font-medium">Rotina ACS</span></td>
-                                <td class="py-3.5 text-slate-200">Revisar e empacotar arquivos finais do Superkit ACS (Fichas e Indicadores).</td>
-                                <td class="py-3.5"><span class="text-amber-400 font-medium text-xs flex items-center gap-1">🟡 Em execução</span></td>
-                            </tr>
-                            <tr>
-                                <td class="py-3.5"><span class="bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded text-xs border border-blue-500/20 font-medium">Canal Pessoal</span></td>
-                                <td class="py-3.5 text-slate-200">Roteirizar 1º vídeo focado em processos pessoais, treinos e uso estratégico de IA.</td>
-                                <td class="py-3.5"><span class="text-amber-400 font-medium text-xs flex items-center gap-1">🟡 Planejado</span></td>
-                            </tr>
-                            <tr>
-                                <td class="py-3.5"><span class="bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded text-xs border border-emerald-500/20 font-medium">VitaChronos</span></td>
-                                <td class="py-3.5 text-slate-200">Alimentar dados diários de treino, peso corporal e medidas no rastreador.</td>
-                                <td class="py-3.5"><span class="text-emerald-400 font-medium text-xs flex items-center gap-1">🟢 Validado (Diário)</span></td>
-                            </tr>
-                            <tr>
-                                <td class="py-3.5"><span class="bg-rose-500/10 text-rose-400 px-2 py-0.5 rounded text-xs border border-rose-500/20 font-medium">Finanças</span></td>
-                                <td class="py-3.5 text-slate-200">Fazer triagem e mapeamento rigoroso de gastos semanais evitando novos débitos.</td>
-                                <td class="py-3.5"><span class="text-rose-400 font-medium text-xs flex items-center gap-1">🚨 Urgência</span></td>
-                            </tr>
-                            <tr>
-                                <td class="py-3.5"><span class="bg-slate-500/20 text-slate-400 px-2 py-0.5 rounded text-xs border border-slate-700 font-medium">Redação</span></td>
-                                <td class="py-3.5 text-slate-400 italic">Escrever uma redação semanal modelo ENEM para manutenção cognitiva (sem pressão).</td>
-                                <td class="py-3.5"><span class="text-slate-400 font-medium text-xs">📌 Regra</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+            <div class="text-xs font-bold text-slate-400 uppercase tracking-widest hidden md:block">
+                fichas e checklists para a rotina do ACS
             </div>
-        </section>
+        </div>
+    </nav>
 
-        <section id="tab-vitachronos" class="tab-content hidden space-y-6">
-            <div class="glass rounded-2xl p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-lg font-bold text-white flex items-center gap-2">🧠 Monitoramento Físico, Nutricional e Cognitivo</h2>
-                    <span class="text-xs bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded">Rastreador Ativo</span>
-                </div>
-                <p class="text-sm text-slate-300 mb-6">Estrutura dedicada à coleta analítica de variáveis biológicas e comportamentais para evitar viés emocional e focar em dados longitudinais puros.</p>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-slate-900/60 p-5 rounded-xl border border-slate-800 space-y-4">
-                        <h3 class="text-sm font-semibold text-blue-400 border-b border-slate-800 pb-2">⚙️ Registrar Métricas do Dia</h3>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs text-slate-400 mb-1">Peso (kg)</label>
-                                <input type="number" step="0.1" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-blue-500 text-sm" placeholder="00.0">
-                            </div>
-                            <div>
-                                <label class="block text-xs text-slate-400 mb-1">Cintura (cm)</label>
-                                <input type="number" step="0.1" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-blue-500 text-sm" placeholder="00">
-                            </div>
+    <!-- 2. HERO -->
+    <header class="pt-12 pb-10 px-5 bg-white">
+        <div class="max-w-md mx-auto md:max-w-2xl text-center">
+            <h1 class="text-4xl md:text-5xl font-black text-acs-ink leading-[1.1] tracking-tight mb-5">
+                O sistema cobra número.<br>
+                <span class="text-acs-teal">O território exige presença.</span>
+            </h1>
+
+            <p class="text-lg text-acs-muted font-medium mb-8 leading-relaxed">
+                O SuperKit ACS foi criado para ajudar você a organizar acompanhamento, registro e conferência da rotina de campo sem depender só da memória.
+            </p>
+
+            <div class="mb-8 rounded-2xl overflow-hidden border border-slate-200 shadow-lg">
+                <img src="assets/hero.jpg" alt="SuperKit ACS na prática" class="w-full h-auto object-cover no-select" onerror="this.style.display='none'">
+            </div>
+
+            <a href="https://pay.hotmart.com/D106253909R" data-position="topo" class="cta-button block w-full bg-acs-teal text-white font-black text-xl py-5 px-8 rounded-2xl shadow-lg shadow-teal-500/30 uppercase tracking-wide">
+                Quero acessar o SuperKit
+            </a>
+            
+            <div class="flex flex-col items-center mt-4 space-y-3">
+                <p class="text-sm font-bold text-slate-500 tracking-wide">Receba em PDF na hora • Imprima e use na rotina</p>
+            </div>
+        </div>
+    </header>
+
+   <!-- 3. BENEFÍCIOS RÁPIDOS -->
+<section class="py-8 px-5 bg-white border-b border-slate-200">
+    <div class="max-w-md mx-auto md:max-w-2xl">
+        <ul class="text-left space-y-3 bg-acs-light p-6 rounded-2xl border border-teal-100">
+            <li class="flex items-start gap-3">
+                <span class="text-acs-teal text-xl leading-none font-bold mt-0.5">✓</span>
+                <span class="font-semibold text-slate-700">Organize acompanhamentos sem depender só da memória</span>
+            </li>
+            <li class="flex items-start gap-3">
+                <span class="text-acs-teal text-xl leading-none font-bold mt-0.5">✓</span>
+                <span class="font-semibold text-slate-700">Revise pendências antes da reunião de equipe</span>
+            </li>
+            <li class="flex items-start gap-3">
+                <span class="text-acs-teal text-xl leading-none font-bold mt-0.5">✓</span>
+                <span class="font-semibold text-slate-700">Use fichas e checklists como apoio na rotina de campo</span>
+            </li>
+            <li class="flex items-start gap-3">
+                <span class="text-acs-teal text-xl leading-none font-bold mt-0.5">✓</span>
+                <span class="font-semibold text-slate-700">Veja nos checklists o que é ação do ACS e o que depende da equipe</span>
+            </li>
+        </ul>
+    </div>
+</section>
+
+    <!-- 4. O QUE VEM DENTRO -->
+    <section class="py-16 px-5 bg-slate-50 border-b border-slate-200">
+        <div class="max-w-md mx-auto md:max-w-4xl text-center">
+            <h2 class="text-3xl font-black text-acs-ink mb-4 tracking-tight">
+                O que vem dentro do SuperKit ACS
+            </h2>
+            <p class="text-lg text-acs-muted font-medium mb-10">
+                Material em PDF para imprimir, organizar e usar como apoio na rotina.
+            </p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-3xl mx-auto text-left">
+                <!-- Card 1 -->
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <div class="bg-white rounded-lg aspect-[3/4] overflow-hidden border border-slate-100 mb-3 cursor-pointer hover:ring-2 hover:ring-acs-teal transition-all relative group">
+                        <img src="assets/fichas.jpg" alt="6 fichas de acompanhamento atualizadas" class="w-full h-full object-cover expandable-img" onclick="openLightbox(0)">
+                        <div class="absolute bottom-2 right-2 bg-acs-ink/70 backdrop-blur-sm px-2 py-1 rounded-md text-white flex items-center gap-1">
+                            <span class="text-[9px] font-bold uppercase tracking-wider">Ampliar</span>
                         </div>
-                        <div>
-                            <label class="block text-xs text-slate-400 mb-1">Treino do Dia</label>
-                            <select class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-blue-500 text-sm">
-                                <option>Selecione a divisão...</option>
-                                <option>Push (Peito/Ombro/Tríceps)</option>
-                                <option>Pull (Costas/Bíceps/Antebraço)</option>
-                                <option>Legs (Quadríceps/Isquiotibiais/Panturrilha)</option>
-                                <option>Cardio Isolado</option>
-                                <option>Descanso Ativo / Off</option>
-                            </select>
-                        </div>
-                        <button class="w-full bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium py-2 rounded-lg transition-colors">
-                            Salvar Registro no Histórico
-                        </button>
                     </div>
+                    <p class="text-sm font-bold text-acs-ink">✓ 6 fichas de acompanhamento atualizadas</p>
+                </div>
 
-                    <div class="bg-slate-900/60 p-5 rounded-xl border border-slate-800 space-y-3">
-                        <h3 class="text-sm font-semibold text-amber-400 border-b border-slate-800 pb-2">📌 Diretrizes de Resposta Corporal</h3>
-                        <ul class="text-xs space-y-2.5 text-slate-300">
-                            <li class="flex items-start gap-2">
-                                <span class="text-emerald-400">🟢</span>
-                                <span><b>Treino e Cardio:</b> Executar o volume planejado sem pular sessões. Constância acelera a reconstrução cognitiva.</span>
-                            </li>
-                            <li class="flex items-start gap-2">
-                                <span class="text-blue-400">💡</span>
-                                <span><b>Abordagem Não-Clínica:</b> Tratar oscilações de peso apenas como dados e hipóteses físicas, nunca como julgamento pessoal.</span>
-                            </li>
-                            <li class="flex items-start gap-2">
-                                <span class="text-amber-400">🟡</span>
-                                <span><b>Atenção ao Perfeccionismo:</b> Evitar travar os treinos por falta de condições perfeitas. O progresso real é gerado na consistência imperfeita.</span>
-                            </li>
-                        </ul>
+                <!-- Card 2 -->
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <div class="bg-white rounded-lg aspect-[3/4] overflow-hidden border border-slate-100 mb-3 cursor-pointer hover:ring-2 hover:ring-acs-teal transition-all relative group">
+                        <img src="assets/checklist-indicadores.jpg" alt="7 checklists dos indicadores C1 a C7" class="w-full h-full object-cover expandable-img" onclick="openLightbox(1)" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNlMmU4ZjAiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiM5NGEzYjgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiPkNoZWNrbGlzdDwvdGV4dD48L3N2Zz4='">
+                        <div class="absolute bottom-2 right-2 bg-acs-ink/70 backdrop-blur-sm px-2 py-1 rounded-md text-white flex items-center gap-1">
+                            <span class="text-[9px] font-bold uppercase tracking-wider">Ampliar</span>
+                        </div>
                     </div>
+                    <p class="text-sm font-bold text-acs-ink">✓ 7 checklists dos indicadores C1 a C7</p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <div class="bg-white rounded-lg aspect-[3/4] overflow-hidden border border-slate-100 mb-3 cursor-pointer hover:ring-2 hover:ring-acs-teal transition-all relative group">
+                        <img src="assets/calendario-individual.jpg" alt="Calendário semanal do ACS" class="w-full h-full object-cover expandable-img" onclick="openLightbox(2)">
+                        <div class="absolute bottom-2 right-2 bg-acs-ink/70 backdrop-blur-sm px-2 py-1 rounded-md text-white flex items-center gap-1">
+                            <span class="text-[9px] font-bold uppercase tracking-wider">Ampliar</span>
+                        </div>
+                    </div>
+                    <p class="text-sm font-bold text-acs-ink">✓ Calendário semanal do ACS</p>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <div class="bg-white rounded-lg aspect-[3/4] overflow-hidden border border-slate-100 mb-3 cursor-pointer hover:ring-2 hover:ring-acs-teal transition-all relative group">
+                        <img src="assets/calendario-equipe.jpg" alt="Calendário mensal da equipe" class="w-full h-full object-cover expandable-img" onclick="openLightbox(3)">
+                        <div class="absolute bottom-2 right-2 bg-acs-ink/70 backdrop-blur-sm px-2 py-1 rounded-md text-white flex items-center gap-1">
+                            <span class="text-[9px] font-bold uppercase tracking-wider">Ampliar</span>
+                        </div>
+                    </div>
+                    <p class="text-sm font-bold text-acs-ink">✓ Calendário mensal da equipe</p>
+                </div>
+
+                <!-- Card 5 -->
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm md:col-span-1 sm:col-span-2 max-w-xs sm:max-w-none mx-auto w-full">
+                    <div class="bg-white rounded-lg aspect-[3/4] overflow-hidden border border-slate-100 mb-3 cursor-pointer hover:ring-2 hover:ring-acs-teal transition-all relative group">
+                        <img src="assets/guia-uso.jpg" alt="Guia simples de uso na rotina" class="w-full h-full object-cover expandable-img" onclick="openLightbox(4)" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNlMmU4ZjAiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiM5NGEzYjgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiPkd1aWEgZGUgVXNvPC90ZXh0Pjwvc3ZnPg=='">
+                        <div class="absolute bottom-2 right-2 bg-acs-ink/70 backdrop-blur-sm px-2 py-1 rounded-md text-white flex items-center gap-1">
+                            <span class="text-[9px] font-bold uppercase tracking-wider">Ampliar</span>
+                        </div>
+                    </div>
+                    <p class="text-sm font-bold text-acs-ink">✓ Guia simples de uso na rotina</p>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <section id="tab-financeiro" class="tab-content hidden space-y-6">
-            <div class="glass rounded-2xl p-6">
-                <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">💰 Planejamento Financeiro & Controle de Danos</h2>
-                <p class="text-sm text-slate-300 mb-6">Restrição financeira tratada como variável real e fixa de decisão. Foco absoluto em conter o crescimento de dívidas antigas (Gestão Pública trancada) e priorizar receitas de curto prazo.</p>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
-                        <span class="text-xs text-slate-400 uppercase font-medium">Meta de Venda Unitária</span>
-                        <div class="text-xl font-bold text-emerald-400 mt-1">R$ 29,90</div>
-                        <span class="text-[10px] text-slate-500">Valor fixado para o Superkit ACS</span>
-                    </div>
-                    <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
-                        <span class="text-xs text-slate-400 uppercase font-medium">Risco Monitorado</span>
-                        <div class="text-xl font-bold text-rose-400 mt-1">Dívida Faculdade</div>
-                        <span class="text-[10px] text-slate-500">Curso trancado acumulando juros</span>
-                    </div>
-                    <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
-                        <span class="text-xs text-slate-400 uppercase font-medium">Regra de Escopo</span>
-                        <div class="text-xl font-bold text-amber-400 mt-1">Custo Zero</div>
-                        <span class="text-[10px] text-slate-500">Bloqueado gastos em ferramentas pagas</span>
-                    </div>
-                </div>
-
-                <div class="bg-slate-900/50 p-5 rounded-xl border border-slate-800">
-                    <h3 class="text-sm font-semibold text-white mb-3">🔍 Lançamento de Despesa Real</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <input type="text" placeholder="Descrição da Despesa (Ex: Mercado)" class="bg-slate-950 border border-slate-800 rounded-lg p-2 text-white text-sm focus:outline-none focus:border-blue-500">
-                        <input type="number" step="0.01" placeholder="Valor (R$)" class="bg-slate-950 border border-slate-800 rounded-lg p-2 text-white text-sm focus:outline-none focus:border-blue-500">
-                        <button class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-sm rounded-lg py-2 transition-colors">
-                            Registrar Saída
-                        </button>
-                    </div>
-                    <p class="text-[11px] text-amber-400/80 mt-2">⚠️ <b>Regra do Sistema:</b> Não invente dados de saldo ou teto sem antes mapear todas as pendências exatas da semana.</p>
-                </div>
+    <!-- 5. POR QUE ESSA VERSÃO EXISTE -->
+    <section class="py-16 px-5 bg-white border-b border-slate-200">
+        <div class="max-w-md mx-auto md:max-w-xl text-center">
+            <h2 class="text-2xl font-black text-acs-ink mb-6">Por que essa versão existe?</h2>
+            <p class="text-slate-700 font-medium text-left leading-relaxed mb-4">
+                O Kit antigo ajudava na organização básica.
+            </p>
+            <p class="text-slate-700 font-medium text-left leading-relaxed mb-4">
+                Mas muitos ACS começaram a pedir uma coisa a mais:
+            </p>
+            <div class="bg-acs-light border border-teal-200 p-5 text-center my-6 rounded-xl">
+                <span class="font-bold text-acs-dark text-lg">“faz algo sobre indicadores.”</span>
             </div>
-        </section>
+            <p class="text-slate-700 font-medium text-left leading-relaxed">
+                Por isso o SuperKit traz fichas novas de acompanhamento e 7 checklists dos indicadores C1 a C7, para ajudar na revisão das principais pendências da rotina.
+            </p>
+        </div>
+    </section>
 
-        <section id="tab-projetos" class="tab-content hidden space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- 6. FRASE DE VALOR -->
+    <section class="py-16 px-5 bg-acs-light border-b border-teal-100 text-center">
+        <div class="max-w-md mx-auto md:max-w-2xl">
+            <p class="text-xl md:text-2xl font-black text-acs-dark leading-snug mb-4">
+                Não é para substituir o sistema.
+            </p>
+            <p class="text-lg md:text-xl font-bold text-acs-ink leading-snug">
+                É para você não depender só da memória enquanto o sistema cobra tudo depois.
+            </p>
+        </div>
+    </section>
+
+    <!-- 7. PARA QUEM É / PARA QUEM NÃO É -->
+    <section class="py-16 px-5 bg-acs-ink text-white">
+        <div class="max-w-md mx-auto md:max-w-2xl">
+            <div class="space-y-6">
+                <!-- Para quem é -->
+                <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700">
+                    <h3 class="text-white font-bold mb-4 text-xl">Para quem é o SuperKit</h3>
+                    <p class="text-sm font-semibold text-slate-300 mb-4">Esse material é para ACS que:</p>
+                    <ul class="text-sm font-medium leading-relaxed text-slate-300 space-y-3">
+                        <li>• sente que carrega coisa demais na cabeça;</li>
+                        <li>• quer organizar melhor a rotina de campo;</li>
+                        <li>• acompanha muitos usuários ao mesmo tempo;</li>
+                        <li>• quer chegar na reunião com mais clareza;</li>
+                        <li>• precisa revisar pendências sem depender só da memória;</li>
+                        <li>• gosta de ter material impresso, prático e direto.</li>
+                    </ul>
+                </div>
                 
-                <div class="glass rounded-2xl p-6 space-y-4">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <span class="text-xs font-bold text-indigo-400 uppercase tracking-wider">Ativo Comercial</span>
-                            <h2 class="text-xl font-bold text-white mt-0.5">Rotina ACS & Produtos</h2>
-                        </div>
-                        <span class="text-xs bg-indigo-500/10 text-indigo-400 px-2.5 py-1 rounded-md border border-indigo-500/20 font-medium">14.5k+ Seguidores</span>
-                    </div>
-                    <p class="text-xs text-slate-300 leading-relaxed">
-                        A audiência construída é um ativo valioso de autoridade, mas não deve causar dependência absoluta de identidade digital.
+                <!-- Para quem não é -->
+                <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700">
+                    <h3 class="text-white font-bold mb-4 text-xl">O SuperKit não é:</h3>
+                    <ul class="text-sm font-medium leading-relaxed text-slate-300 space-y-3 mb-6">
+                        <li>• curso completo de e-SUS;</li>
+                        <li>• promessa de indicador garantido;</li>
+                        <li>• substituto da equipe técnica;</li>
+                        <li>• substituto do sistema oficial.</li>
+                    </ul>
+                    <p class="text-sm font-semibold border-t border-slate-700 pt-4 text-slate-300">
+                        É uma ferramenta prática de apoio para organizar acompanhamento, registro e conferência da rotina.
                     </p>
-                    <div class="bg-slate-950 p-3 rounded-lg border border-slate-900 text-xs space-y-2">
-                        <div class="flex justify-between">
-                            <span class="text-slate-400">Superkit ACS (Fichas):</span>
-                            <span class="text-emerald-400 font-medium">Pronto p/ Lançar (R$29,90)</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-slate-400">Manual APS 360:</span>
-                            <span class="text-amber-400">Ativo (Poucas vendas)</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-slate-400">Curso Rotina ACS:</span>
-                            <span class="text-blue-400">Estruturando (Dudu Física convidado)</span>
-                        </div>
-                    </div>
                 </div>
+            </div>
+        </div>
+    </section>
 
-                <div class="glass rounded-2xl p-6 space-y-4">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <span class="text-xs font-bold text-blue-400 uppercase tracking-wider">Eixo Próprio de Autonomia</span>
-                            <h2 class="text-xl font-bold text-white mt-0.5">Canal de Conteúdo Geral</h2>
-                        </div>
-                        <span class="text-xs bg-blue-500/10 text-blue-400 px-2.5 py-1 rounded-md border border-blue-500/20 font-medium">Nova Estrutura</span>
-                    </div>
-                    <p class="text-xs text-slate-300 leading-relaxed">
-                        Canal focado na construção de marca pessoal sem amarras de nicho único. Conteúdos sobre rotina, disciplina, hiperfoco prático, treinos e aplicação de IA no cotidiano.
+    <!-- 8. COMO USAR NA PRÁTICA -->
+    <section class="py-16 px-5 bg-white border-b border-slate-200">
+        <div class="max-w-md mx-auto md:max-w-2xl">
+            <h2 class="text-2xl font-black text-acs-ink mb-8 tracking-tight text-center">
+                Organização não resolve tudo. Mas ajuda a não carregar tudo na cabeça.
+            </h2>
+            
+            <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <h3 class="font-bold text-acs-ink mb-5 text-lg">Como usar na prática:</h3>
+                <ol class="space-y-4 text-sm text-slate-700 font-medium list-decimal list-inside">
+                    <li>Baixe o PDF.</li>
+                    <li>Imprima as fichas que fizerem sentido para sua rotina.</li>
+                    <li>Separe por linha de cuidado ou por prioridade da microárea.</li>
+                    <li>Use para acompanhar pendências durante o mês.</li>
+                    <li>Revise antes da reunião de equipe.</li>
+                    <li>Mantenha os registros oficiais no sistema usado pela sua unidade.</li>
+                </ol>
+            </div>
+        </div>
+    </section>
+
+    <!-- 9. FAQ -->
+    <section class="py-16 px-5 bg-slate-50 border-b border-slate-200">
+        <div class="max-w-md mx-auto">
+            <h2 class="text-2xl font-black text-acs-ink mb-8 tracking-tight text-center">
+                Dúvidas frequentes
+            </h2>
+            
+            <div class="space-y-3">
+                <details class="bg-white p-5 rounded-xl border border-slate-200 cursor-pointer shadow-sm">
+                    <summary class="font-bold text-acs-ink flex justify-between items-center outline-none">
+                        O material é físico ou digital?
+                        <span class="text-xl font-light text-acs-teal">+</span>
+                    </summary>
+                    <p class="mt-3 text-slate-600 text-sm leading-relaxed border-t border-slate-100 pt-3">
+                        O SuperKit é entregue em PDF. Você recebe na hora, pode baixar, imprimir e usar na rotina.
                     </p>
-                    <div class="bg-slate-950 p-3 rounded-lg border border-slate-900 text-xs space-y-1.5 text-slate-300">
-                        <div class="flex items-center gap-1.5"><span class="text-blue-400">⚙️</span> Reels Estratégicos: Tradução automática para internacionalização.</div>
-                        <div class="flex items-center gap-1.5"><span class="text-blue-400">⚙️</span> Narrativa Base: Conquistar autonomia através de processos práticos.</div>
-                    </div>
-                </div>
-            </div>
+                </details>
 
-            <div class="glass rounded-2xl p-6">
-                <h3 class="text-sm font-bold text-white mb-3">🛠️ Ferramentas Autorizadas no Fluxo Atual</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-center">
-                    <div class="p-2.5 bg-slate-900/60 rounded-lg border border-slate-800 text-slate-200">🤖 ChatGPT Plus</div>
-                    <div class="p-2.5 bg-slate-900/60 rounded-lg border border-slate-800 text-slate-200">🎓 Gemini Pro Estudante</div>
-                    <div class="p-2.5 bg-slate-900/60 rounded-lg border border-slate-800 text-slate-200">🎨 Canva Pro</div>
-                    <div class="p-2.5 bg-slate-900/60 rounded-lg border border-slate-800 text-slate-200">🎬 CapCut (Gratuito)</div>
-                </div>
-                <p class="text-[10px] text-slate-500 mt-3 italic text-center">Nota: Ferramentas antigas ou não mencionadas estão desativadas por padrão para mitigar desperdício de caixa.</p>
-            </div>
-        </section>
+                <details class="bg-white p-5 rounded-xl border border-slate-200 cursor-pointer shadow-sm">
+                    <summary class="font-bold text-acs-ink flex justify-between items-center outline-none">
+                        Posso usar pelo celular?
+                        <span class="text-xl font-light text-acs-teal">+</span>
+                    </summary>
+                    <p class="mt-3 text-slate-600 text-sm leading-relaxed border-t border-slate-100 pt-3">
+                        Sim. Mas o melhor uso é imprimir as fichas e organizar em pasta, prancheta ou fichário.
+                    </p>
+                </details>
 
-        <footer class="text-center text-xs text-slate-500 pt-4 border-t border-slate-900">
-            VitaChronos Core OS • Organização Estratégica Transparente e Sem Ruídos.
-        </footer>
+                <details class="bg-white p-5 rounded-xl border border-slate-200 cursor-pointer shadow-sm">
+                    <summary class="font-bold text-acs-ink flex justify-between items-center outline-none">
+                        Substitui o sistema oficial?
+                        <span class="text-xl font-light text-acs-teal">+</span>
+                    </summary>
+                    <p class="mt-3 text-slate-600 text-sm leading-relaxed border-t border-slate-100 pt-3">
+                        Não. O SuperKit é apoio de organização e conferência. Os registros oficiais continuam sendo feitos no sistema utilizado pela sua equipe.
+                    </p>
+                </details>
+
+                <details class="bg-white p-5 rounded-xl border border-slate-200 cursor-pointer shadow-sm">
+                    <summary class="font-bold text-acs-ink flex justify-between items-center outline-none">
+                        Serve para qualquer município?
+                        <span class="text-xl font-light text-acs-teal">+</span>
+                    </summary>
+                    <p class="mt-3 text-slate-600 text-sm leading-relaxed border-t border-slate-100 pt-3">
+                        Sim, como apoio de organização da rotina. Mas as orientações da sua equipe técnica e do seu município sempre devem ser respeitadas.
+                    </p>
+                </details>
+
+                <details class="bg-white p-5 rounded-xl border border-slate-200 cursor-pointer shadow-sm">
+                    <summary class="font-bold text-acs-ink flex justify-between items-center outline-none">
+                        É curso?
+                        <span class="text-xl font-light text-acs-teal">+</span>
+                    </summary>
+                    <p class="mt-3 text-slate-600 text-sm leading-relaxed border-t border-slate-100 pt-3">
+                        Não. É um conjunto de fichas, checklists e calendários para apoiar a rotina do ACS.
+                    </p>
+                </details>
+
+                <details class="bg-white p-5 rounded-xl border border-slate-200 cursor-pointer shadow-sm">
+                    <summary class="font-bold text-acs-ink flex justify-between items-center outline-none">
+                        Tem os indicadores?
+                        <span class="text-xl font-light text-acs-teal">+</span>
+                    </summary>
+                    <p class="mt-3 text-slate-600 text-sm leading-relaxed border-t border-slate-100 pt-3">
+                        Sim. O SuperKit inclui 7 checklists dos indicadores C1 a C7 para ajudar na revisão dos principais pontos de acompanhamento.
+                    </p>
+                </details>
+            </div>
+        </div>
+    </section>
+
+    <!-- 10. OFERTA FINAL -->
+    <section id="oferta" class="py-20 px-5 bg-acs-ink text-white rounded-t-[2.5rem] mt-4 relative overflow-hidden">
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-lg h-64 bg-acs-teal/30 blur-[80px] rounded-full pointer-events-none"></div>
+
+        <div class="max-w-md mx-auto relative z-10 text-center">
+            <h2 class="text-2xl md:text-3xl font-black mb-10 tracking-tight leading-tight">
+                Mais clareza para acompanhar.<br>
+                Menos coisa perdida na memória.
+            </h2>
+
+            <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-8 mb-8">
+                
+                <div class="flex items-center justify-center gap-3 mb-1">
+                    <span class="text-slate-400 line-through text-lg font-bold">De R$ 39,90</span>
+                </div>
+                
+                <div class="text-5xl font-black text-white mb-8">
+                    <span class="text-2xl font-bold align-top mt-1 inline-block">por R$</span> 29,90
+                </div>
+
+                <ul class="text-left space-y-4 mb-8 text-sm font-medium">
+                    <li class="flex items-center gap-3">
+                        <span class="text-teal-400 font-bold">✓</span> Pagamento seguro
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <span class="text-teal-400 font-bold">✓</span> Receba em PDF na hora
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <span class="text-teal-400 font-bold">✓</span> Pode imprimir e usar na rotina
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <span class="text-teal-400 font-bold">✓</span> Garantia de 7 dias
+                    </li>
+                </ul>
+
+                <a href="https://pay.hotmart.com/D106253909R" data-position="oferta_final" class="cta-button block w-full bg-acs-teal hover:bg-teal-400 text-white font-black text-xl py-5 px-6 rounded-2xl shadow-[0_0_30px_rgba(20,184,166,0.3)] uppercase tracking-wide">
+                    Quero acessar o SuperKit
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 11. BARRA FIXA MOBILE -->
+    <div class="mobile-cta-bar">
+        <div class="flex-1">
+            <p class="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-0.5">SuperKit ACS em PDF</p>
+            <div class="flex items-end gap-1.5">
+                <p class="text-xl font-black text-acs-ink leading-none">R$ 29,90</p>
+            </div>
+        </div>
+        <a href="https://pay.hotmart.com/D106253909R" data-position="barra_fixa" class="cta-button bg-acs-teal hover:bg-teal-400 text-white font-black text-sm py-3 px-6 rounded-xl uppercase tracking-wider shrink-0 shadow-[0_0_15px_rgba(20,184,166,0.3)]">
+            ACESSAR AGORA
+        </a>
     </div>
 
+    <!-- 12. LIGHTBOX -->
+    <div id="imageModal" class="hidden" onclick="closeLightbox()">
+        <div class="relative w-full h-full flex flex-col justify-center items-center p-4">
+            <button onclick="closeLightbox()" class="absolute top-6 right-6 text-white bg-slate-800/80 hover:bg-slate-700 p-3 rounded-full font-bold text-xl leading-none shadow-lg z-50">✕</button>
+            <img id="lightboxImg" src="" alt="Visualização" class="max-w-full max-h-[75vh] object-contain rounded-lg shadow-2xl mb-4" style="touch-action: none;" onclick="event.stopPropagation()">
+            <div class="flex gap-6 mt-4 z-50" onclick="event.stopPropagation()">
+                <button onclick="prevImage(event)" class="bg-acs-teal text-white px-6 py-3 rounded-xl font-bold uppercase text-sm shadow-lg hover:bg-teal-400">Anterior</button>
+                <button onclick="nextImage(event)" class="bg-acs-teal text-white px-6 py-3 rounded-xl font-bold uppercase text-sm shadow-lg hover:bg-teal-400">Próxima</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 13. SCRIPT FUNCIONAL DO LIGHTBOX E EVENTOS DE TRACKING -->
     <script>
-        function switchTab(tabId) {
-            // Ocultar todas as seções de conteúdo
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.add('hidden');
-            });
-            
-            // Mostrar a seção selecionada
-            document.getElementById('tab-' + tabId).classList.remove('hidden');
-            
-            // Resetar estilos de todos os botões
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('text-white', 'bg-slate-900/90', 'border-b-2', 'border-blue-500');
-                btn.classList.add('text-slate-400');
-            });
-            
-            // Aplicar estilo ativo no botão clicado
-            const activeBtn = document.getElementById('btn-' + tabId);
-            activeBtn.classList.remove('text-slate-400');
-            activeBtn.classList.add('text-white', 'bg-slate-900/90', 'border-b-2', 'border-blue-500');
+        const modal = document.getElementById('imageModal');
+        const lightboxImg = document.getElementById('lightboxImg');
+        const images = document.querySelectorAll('.expandable-img');
+        let currentIndex = 0;
+
+        let zoomScale = 1;
+        let isPanning = false;
+        let panX = 0, panY = 0;
+        let startTouchX = 0, startTouchY = 0;
+        let initialDist = 0;
+        let initialZoom = 1;
+
+        lightboxImg.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 2) {
+                e.preventDefault();
+                initialDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                initialZoom = zoomScale;
+            } else if (e.touches.length === 1 && zoomScale > 1) {
+                e.preventDefault();
+                isPanning = true;
+                startTouchX = e.touches[0].clientX - panX;
+                startTouchY = e.touches[0].clientY - panY;
+            }
+        }, { passive: false });
+
+        lightboxImg.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 2) {
+                e.preventDefault();
+                const currentDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                zoomScale = initialZoom * (currentDist / initialDist);
+                zoomScale = Math.max(1, Math.min(zoomScale, 4));
+                applyTransform();
+            } else if (e.touches.length === 1 && isPanning) {
+                e.preventDefault();
+                panX = e.touches[0].clientX - startTouchX;
+                panY = e.touches[0].clientY - startTouchY;
+                applyTransform();
+            }
+        }, { passive: false });
+
+        lightboxImg.addEventListener('touchend', (e) => {
+            if (e.touches.length < 2) isPanning = false;
+            if (e.touches.length === 0 && zoomScale <= 1) resetZoom();
+        });
+
+        function applyTransform() {
+            lightboxImg.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomScale})`;
+            lightboxImg.style.transition = 'none';
         }
+
+        function resetZoom() {
+            zoomScale = 1;
+            panX = 0;
+            panY = 0;
+            lightboxImg.style.transform = `translate(0px, 0px) scale(1)`;
+            lightboxImg.style.transition = 'transform 0.3s ease-out';
+        }
+
+        function openLightbox(index) {
+            currentIndex = index;
+            resetZoom();
+            lightboxImg.src = images[currentIndex].src;
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            // TRACKING SUPERKIT: inserir evento de visualização de imagem aqui se necessário
+        }
+
+        function closeLightbox() {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+            resetZoom();
+        }
+
+        function nextImage(e) {
+            e.stopPropagation();
+            currentIndex = (currentIndex + 1) % images.length;
+            resetZoom();
+            lightboxImg.src = images[currentIndex].src;
+        }
+
+        function prevImage(e) {
+            e.stopPropagation();
+            currentIndex = (currentIndex - 1 + images.length) % images.length;
+            resetZoom();
+            lightboxImg.src = images[currentIndex].src;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // TRACKING SUPERKIT: inserir inicializações de eventos ou monitoramento de tela aqui
+            
+            const ctas = document.querySelectorAll('.cta-button');
+            ctas.forEach(cta => {
+                cta.addEventListener('click', function(e) {
+                    // TRACKING SUPERKIT: inserir gatilhos de clique/checkout para Analytics e Meta Pixel aqui
+                });
+            });
+        });
     </script>
 </body>
 </html>
